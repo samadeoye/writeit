@@ -4,7 +4,6 @@ import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,6 +23,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
+import android.util.Log;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -44,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
     private JournalApi journalApi;
     private RecyclerView recyclerView;
     private TextView emptyJournalView;
-    private SwipeRefreshLayout swipeRefreshLayout;
 
     private List<JournalModel> allJournals = new ArrayList<>();
 
@@ -67,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         ImageView searchIcon = findViewById(R.id.searchIcon);
         ImageView filterIcon = findViewById(R.id.filterIcon);
 
-        //swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+        SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -114,26 +113,29 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-//        swipeRefreshLayout.setOnRefreshListener(() -> {
-//            if (allJournals != null) {
-//                allJournals.clear();
-//            }
-//            if (adapter != null) {
-//                adapter.notifyDataSetChanged();
-//            }
-//
-//            currentPage = 1;
-//            isLastPage = false;
-//            loadJournals(currentPage);
-//            swipeRefreshLayout.setRefreshing(false);
-//        });
+        // Reload journal list on refresh
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            // Clear old data
+            if (allJournals != null) {
+                allJournals.clear();
+            }
+            if (adapter != null) {
+                adapter.clearAll();
+            }
+
+            isLastPage = false;
+            currentPage = 1; // Reset pagination
+            loadJournals(currentPage);
+
+            swipeRefreshLayout.setRefreshing(false); // Stop the spinner after reload
+        });
 
         // Set up "Add New" Button
         Button addNewJournalEntryBtn = findViewById(R.id.addNewJournalEntryBtn);
         addNewJournalEntryBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showAddNewEntryDialog(adapter); // Now adapter is accessible
+                showAddNewEntryDialog(adapter);
             }
         });
     }
@@ -181,7 +183,6 @@ public class MainActivity extends AppCompatActivity {
 
                 // Now we have valid inputs, create a new JournalModel and add it to the adapter
                 JournalModel newEntry = new JournalModel(title, date, details);
-                //adapter.addJournalEntry(newEntry);
 
                 journalApi.createJournal(deviceId, newEntry).enqueue(new Callback<JournalModel>() {
                     @Override
@@ -265,20 +266,6 @@ public class MainActivity extends AppCompatActivity {
                     int totalCount = response.body().getTotalCount();
 
                     if (adapter == null) {
-                        //adapter = new JournalAdapter(MainActivity.this, new ArrayList<>());
-                        /*
-                        adapter = new JournalAdapter(MainActivity.this, new ArrayList<>(), updatedEntry -> {
-                            // Find and update in allJournals
-                            int allJournalsSize = allJournals.size();
-                            for (int i = 0; i < allJournalsSize; i++) {
-                                if (allJournals.get(i).getId() == (updatedEntry.getId())) {
-                                    allJournals.set(i, updatedEntry);
-                                    break;
-                                }
-                            }
-                        });
-                        */
-
                         adapter = new JournalAdapter(MainActivity.this, new ArrayList<>(), new JournalAdapter.OnEntryUpdatedListener() {
                             @Override
                             public void onEntryUpdated(JournalModel updatedEntry) {

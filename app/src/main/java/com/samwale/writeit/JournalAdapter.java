@@ -133,19 +133,28 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
         return journalList.size();
     }
 
+    // Add a new entry to the existing data in the journal list
     public void addJournalEntry(JournalModel journalEntry) {
         journalList.add(0, journalEntry); // Insert at the top
         notifyItemInserted(0); // Notify that item was inserted at the top
     }
 
+    // Add new entries to the existing data in the journal list
     public void addJournalEntries(List<JournalModel> newEntries) {
         journalList.addAll(newEntries);
         notifyDataSetChanged();
     }
 
+    // Remove current entries and set new entries into the journal list
     public void setJournalEntries(List<JournalModel> entries) {
         journalList.clear(); // Clear existing entries
         journalList.addAll(entries); // Add new ones
+        notifyDataSetChanged();
+    }
+
+    // Clear all entries in the journal list
+    public void clearAll() {
+        journalList.clear();
         notifyDataSetChanged();
     }
 
