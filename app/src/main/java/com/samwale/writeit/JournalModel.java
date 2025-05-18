@@ -9,14 +9,14 @@ public class JournalModel {
     // Constructor
     public JournalModel(int id, String title, String date, String details) {
         this.id = id;
-        this.title = title;
+        this.title = JournalUtils.capitalizeWords(title);
         this.date = date;
         this.details = details;
     }
 
     // Constructor without id (for creating new entries)
     public JournalModel(String title, String date, String details) {
-        this.title = title;
+        this.title = JournalUtils.capitalizeWords(title);
         this.date = date;
         this.details = details;
     }
@@ -52,6 +52,6 @@ public class JournalModel {
     }
 
     public void setDetails(String details) {
-        this.details = JournalUtils.capitalizeWords(details);
+        this.details = details;
     }
 }

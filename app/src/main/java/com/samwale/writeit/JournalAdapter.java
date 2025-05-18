@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.text.SpannableString;
@@ -28,6 +29,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -37,6 +39,7 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
 
     private final List<JournalModel> journalList;
     private Context context;
+    private String deviceId;
 
     public interface OnEntryUpdatedListener {
         void onEntryUpdated(JournalModel updatedEntry);
@@ -70,6 +73,20 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
 
         holder.titleView.setText(title);
         holder.dateView.setText(date);
+
+        // Get device id from device shared storage
+        SharedPreferences sharedPreferences = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+        String deviceIdString = "writeit_device_id";
+        deviceId = sharedPreferences.getString(deviceIdString, null);
+
+        // If device id cannot be found in storage, create a new one
+        if (deviceId == null) {
+            // UUID does not exist, generate a new one
+            deviceId = UUID.randomUUID().toString();
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(deviceIdString, deviceId);  // Save the new UUID
+            editor.apply();
+        }
 
         // Show full dialog when title is clicked
         View.OnClickListener showDialogClickListener = v -> {
@@ -180,7 +197,7 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
 
                     // Call API to update the journal
                     JournalApi journalApi = ApiClient.getJournalApi();
-                    journalApi.updateJournal(journal.getId(), updatedJournal).enqueue(new Callback<JournalModel>() {
+                    journalApi.updateJournal(deviceId, journal.getId(), updatedJournal).enqueue(new Callback<JournalModel>() {
                         @Override
                         public void onResponse(Call<JournalModel> call, Response<JournalModel> response) {
                             if (response.isSuccessful() && response.body() != null) {
@@ -249,7 +266,7 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
                 .setMessage("Are you sure you want to delete this journal entry?")
                 .setPositiveButton("Delete", (dialogInterface, i) -> {
                     JournalApi journalApi = ApiClient.getJournalApi();
-                    journalApi.deleteJournal(journal.getId()).enqueue(new Callback<Void>() {
+                    journalApi.deleteJournal(deviceId, journal.getId()).enqueue(new Callback<Void>() {
                         @Override
                         public void onResponse(Call<Void> call, Response<Void> response) {
                             if (response.isSuccessful()) {

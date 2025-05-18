@@ -1,6 +1,7 @@
 package com.samwale.writeit;
 
 import retrofit2.Call;
+import retrofit2.http.Header;
 import retrofit2.http.Body;
 import retrofit2.http.Path;
 import retrofit2.http.GET;
@@ -12,14 +13,14 @@ import retrofit2.http.Query;
 public interface JournalApi {
 
     @GET("journals")
-    Call<JournalResponse> getJournals(@Query("page") int page, @Query("limit") int limit);
+    Call<JournalResponse> getJournals(@Header("deviceId") String deviceId, @Query("page") int page, @Query("limit") int limit);
 
     @POST("journals")
-    Call<JournalModel> createJournal(@Body JournalModel journal);
+    Call<JournalModel> createJournal(@Header("deviceId") String deviceId, @Body JournalModel journal);
 
     @PUT("journals/{id}")
-    Call<JournalModel> updateJournal(@Path("id") int id, @Body JournalModel journal);
+    Call<JournalModel> updateJournal(@Header("deviceId") String deviceId, @Path("id") int id, @Body JournalModel journal);
 
     @DELETE("journals/{id}")
-    Call<Void> deleteJournal(@Path("id") int id);
+    Call<Void> deleteJournal(@Header("deviceId") String deviceId, @Path("id") int id);
 }

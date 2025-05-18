@@ -1,6 +1,8 @@
 package com.samwale.writeit;
 
 import android.app.DatePickerDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -19,6 +21,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.app.AlertDialog;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -27,6 +31,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -34,6 +39,7 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
+    private String deviceId;
     private JournalAdapter adapter;
     private JournalApi journalApi;
     private RecyclerView recyclerView;
@@ -47,6 +53,9 @@ public class MainActivity extends AppCompatActivity {
     private boolean isLoading = false;
     private boolean isLastPage = false;
     private int journalListSize = 0;
+
+    public MainActivity() throws GeneralSecurityException, IOException {
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +72,20 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         journalApi = ApiClient.getJournalApi();
+
+        // Get device id from device shared storage
+        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+        String deviceIdString = "writeit_device_id";
+        deviceId = sharedPreferences.getString(deviceIdString, null);
+
+        // If device id cannot be found in storage, create a new one
+        if (deviceId == null) {
+            // UUID does not exist, generate a new one
+            deviceId = UUID.randomUUID().toString();
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(deviceIdString, deviceId);  // Save the new UUID
+            editor.apply();
+        }
 
         // Load journal entries from API
         loadJournals(currentPage);
@@ -160,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
                 JournalModel newEntry = new JournalModel(title, date, details);
                 //adapter.addJournalEntry(newEntry);
 
-                journalApi.createJournal(newEntry).enqueue(new Callback<JournalModel>() {
+                journalApi.createJournal(deviceId, newEntry).enqueue(new Callback<JournalModel>() {
                     @Override
                     public void onResponse(Call<JournalModel> call, Response<JournalModel> response) {
                         if (response.isSuccessful() && response.body() != null) {
@@ -234,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadJournals(int page) {
         isLoading = true;
-        journalApi.getJournals(page, limit).enqueue(new Callback<JournalResponse>() {
+        journalApi.getJournals(deviceId, page, limit).enqueue(new Callback<JournalResponse>() {
             @Override
             public void onResponse(Call<JournalResponse> call, Response<JournalResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -290,17 +313,17 @@ public class MainActivity extends AppCompatActivity {
                     if (journalList.size() < limit) {
                         isLastPage = true;
                     }
-
-                    toggleEmptyView(adapter, emptyJournalView, recyclerView);
                 } else {
                     Toast.makeText(MainActivity.this, "Failed to load journals", Toast.LENGTH_SHORT).show();
                 }
                 isLoading = false;
+                toggleEmptyView(adapter, emptyJournalView, recyclerView);
             }
 
             @Override
             public void onFailure(Call<JournalResponse> call, Throwable t) {
                 isLoading = false;
+                toggleEmptyView(adapter, emptyJournalView, recyclerView);
                 Toast.makeText(MainActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
@@ -377,12 +400,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void toggleEmptyView(JournalAdapter adapter, TextView emptyView, RecyclerView recyclerView) {
-        if (adapter.getItemCount() == 0) {
+        boolean setEmpty = true;
+        if (adapter != null) {
+            if (adapter.getItemCount() > 0) {
+                emptyView.setVisibility(View.GONE);
+                recyclerView.setVisibility(View.VISIBLE);
+                setEmpty = false;
+            }
+        }
+
+        if (setEmpty)
+        {
             emptyView.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
-        } else {
-            emptyView.setVisibility(View.GONE);
-            recyclerView.setVisibility(View.VISIBLE);
         }
     }
 

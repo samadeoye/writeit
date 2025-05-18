@@ -10,6 +10,7 @@ constraintlayout = "2.2.1"
 recyclerview = "1.2.0"
 retrofit = "2.9.0"
 swiperefreshlayout = "1.1.0"
+security-crypto = "1.1.0-alpha03"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -23,6 +24,7 @@ recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 gson-converter = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
+security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "security-crypto" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
