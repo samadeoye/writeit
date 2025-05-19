@@ -24,14 +24,14 @@
         android:weightSum="1">
 
         <!-- Add New Button -->
-        <Button
+        <ImageButton
             android:id="@+id/addNewJournalEntryBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add New"
-            android:backgroundTint="@android:color/black"
-            android:textColor="@android:color/white"
-            android:paddingHorizontal="20dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Add Journal"
+            android:src="@android:drawable/ic_menu_add"
+            app:tint="@android:color/black"
             android:paddingVertical="8dp"
             android:textStyle="bold"
             android:layout_marginEnd="12dp" />
