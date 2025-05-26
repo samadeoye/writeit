@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import jp.wasabeef.richeditor.RichEditor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -149,11 +150,24 @@ public class MainActivity extends AppCompatActivity {
 
         // Find the input fields within the dialog view
         EditText titleInput = dialogView.findViewById(R.id.titleInput);
-        EditText detailsInput = dialogView.findViewById(R.id.detailsInput);
         TextView dateTextView = dialogView.findViewById(R.id.dateInput);
+        //EditText detailsInput = dialogView.findViewById(R.id.detailsInput);
+        RichEditor detailsInput = dialogView.findViewById(R.id.detailsInputRichEditor);
+        Button detailsInputBtnBold = dialogView.findViewById(R.id.detailsInputBtnBold);
+        Button detailsInputBtnItalics = dialogView.findViewById(R.id.detailsInputBtnItalics);
+        Button detailsInputBtnUnderline = dialogView.findViewById(R.id.detailsInputBtnUnderline);
+        Button detailsInputBtnStrikethrough = dialogView.findViewById(R.id.detailsInputBtnStrikethrough);
+        ImageButton detailsInputBtnBulletList = dialogView.findViewById(R.id.detailsInputBtnBulletList);
+        ImageButton detailsInputBtnNumberList = dialogView.findViewById(R.id.detailsInputBtnNumberList);
+
+        detailsInputBtnBold.setOnClickListener(v -> detailsInput.setBold());
+        detailsInputBtnItalics.setOnClickListener(v -> detailsInput.setItalic());
+        detailsInputBtnUnderline.setOnClickListener(v -> detailsInput.setUnderline());
+        detailsInputBtnStrikethrough.setOnClickListener(v -> detailsInput.setStrikeThrough());
+        detailsInputBtnBulletList.setOnClickListener(v -> detailsInput.setBullets());
+        detailsInputBtnNumberList.setOnClickListener(v -> detailsInput.setNumbers());
 
         // Set the dialog view
-        //builder.setView(dialogView);
         builder.setView(dialogView)
                 .setPositiveButton("Save", null)
                 .setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss());
@@ -167,7 +181,8 @@ public class MainActivity extends AppCompatActivity {
             saveButton.setOnClickListener(v -> {
                 // Get the input values
                 String title = titleInput.getText().toString().trim();
-                String details = detailsInput.getText().toString().trim();
+                //String details = detailsInput.getText().toString().trim();
+                String details = detailsInput.getHtml();
 
                 // Validate inputs
                 if (title.isEmpty() || details.isEmpty()) {
@@ -287,7 +302,7 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                 }
                             }
-                        });
+                        }, deviceId);
 
                         recyclerView.setAdapter(adapter);
                     }

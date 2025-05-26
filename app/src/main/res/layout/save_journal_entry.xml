@@ -46,18 +46,109 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Details Input -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/details"
-        android:layout_marginTop="12dp">
+<!--    <com.google.android.material.textfield.TextInputLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:hint="@string/details"-->
+<!--        android:layout_marginTop="12dp">-->
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/detailsInput"
-            android:layout_width="match_parent"
+<!--        <com.google.android.material.textfield.TextInputEditText-->
+<!--            android:id="@+id/detailsInput"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:inputType="textMultiLine"-->
+<!--            android:lines="5"-->
+<!--            android:gravity="top" />-->
+<!--    </com.google.android.material.textfield.TextInputLayout>-->
+
+    <jp.wasabeef.richeditor.RichEditor
+        android:id="@+id/detailsInputRichEditor"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginTop="12dp"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <Button
+            android:id="@+id/detailsInputBtnBold"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:inputType="textMultiLine"
-            android:lines="5"
-            android:gravity="top" />
-    </com.google.android.material.textfield.TextInputLayout>
+            android:text="B"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:background="@android:color/transparent"
+            android:textColor="@android:color/black"
+            android:padding="10dp"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            />
+
+        <Button
+            android:id="@+id/detailsInputBtnItalics"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="I"
+            android:textStyle="italic"
+            android:textSize="20sp"
+            android:background="@android:color/transparent"
+            android:textColor="@android:color/black"
+            android:padding="10dp"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            />
+
+        <Button
+            android:id="@+id/detailsInputBtnUnderline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/capital_u_underlined"
+            android:textSize="20sp"
+            android:background="@android:color/transparent"
+            android:textColor="@android:color/black"
+            android:padding="10dp"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            />
+
+        <Button
+            android:id="@+id/detailsInputBtnStrikethrough"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/capital_s_strikethrough"
+            android:textSize="20sp"
+            android:background="@android:color/transparent"
+            android:textColor="@android:color/black"
+            android:padding="10dp"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            />
+
+        <ImageButton
+            android:id="@+id/detailsInputBtnBulletList"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/format_list_bulleted_24"
+            android:background="@android:color/transparent"
+            android:contentDescription="Bullet List"
+            android:padding="10dp"
+            android:minHeight="0dp"
+            android:minWidth="0dp" />
+
+        <ImageButton
+            android:id="@+id/detailsInputBtnNumberList"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/format_list_numbered_24"
+            android:background="@android:color/transparent"
+            android:contentDescription="Number List"
+            android:padding="10dp"
+            android:minHeight="0dp"
+            android:minWidth="0dp" />
+
+    </LinearLayout>
+
 </LinearLayout>

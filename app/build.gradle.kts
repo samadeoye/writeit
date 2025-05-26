@@ -42,6 +42,7 @@ dependencies {
     implementation(libs.gson.converter)
     implementation(libs.swiperefreshlayout)
     implementation(libs.security.crypto)
+    implementation(libs.richeditor.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

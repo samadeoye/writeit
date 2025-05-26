@@ -11,6 +11,7 @@ recyclerview = "1.2.0"
 retrofit = "2.9.0"
 swiperefreshlayout = "1.1.0"
 security-crypto = "1.1.0-alpha03"
+richeditor-android = "2.0.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -25,6 +26,7 @@ retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = 
 gson-converter = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
 security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "security-crypto" }
+richeditor-android = { group = "jp.wasabeef", name = "richeditor-android", version.ref = "richeditor-android" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -4,18 +4,22 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.text.Html;
 import android.text.SpannableString;
 import android.text.Spanned;
+import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Button;
@@ -29,8 +33,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
 
+import jp.wasabeef.richeditor.RichEditor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -49,10 +53,11 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
     private OnEntryUpdatedListener updateListener;
 
     // Constructor to initialize data list
-    public JournalAdapter(Context context, List<JournalModel> journalList, OnEntryUpdatedListener listener) {
+    public JournalAdapter(Context context, List<JournalModel> journalList, OnEntryUpdatedListener listener, String deviceId) {
         this.context = context;
         this.journalList = journalList;
         this.updateListener = listener;
+        this.deviceId = deviceId;
     }
 
     @NonNull
@@ -68,32 +73,24 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
         JournalModel data = journalList.get(position);
         String title = data.getTitle();
         String date = data.getDate();
-        String fullDetails = data.getDetails();
-        int maxLength = 100;
+        String details = data.getDetails();
 
         holder.titleView.setText(title);
         holder.dateView.setText(date);
 
-        // Get device id from device shared storage
-        SharedPreferences sharedPreferences = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
-        String deviceIdString = "writeit_device_id";
-        deviceId = sharedPreferences.getString(deviceIdString, null);
-
-        // If device id cannot be found in storage, create a new one
-        if (deviceId == null) {
-            // UUID does not exist, generate a new one
-            deviceId = UUID.randomUUID().toString();
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString(deviceIdString, deviceId);  // Save the new UUID
-            editor.apply();
-        }
-
-        // Show full dialog when title is clicked
-        View.OnClickListener showDialogClickListener = v -> {
+        // Show full content in dialog when the preview body is clicked
+        View.OnClickListener showFullContentDialog = v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
             builder.setTitle(title);
-            builder.setMessage("Date: " + date + "\n\n" + fullDetails);
-            builder.setPositiveButton("Close", null);
+
+            WebView webView = new WebView(context);
+            webView.loadDataWithBaseURL(null, "<html><body>Date: " + date + "<br><br>" + details + "</body></html>", "text/html", "utf-8", null);
+
+            builder.setView(webView);
+            builder.setNegativeButton("Close", null);
+            builder.setPositiveButton("Edit", (dialog, which) -> {
+                showEditDialog(data, position);
+            });
             builder.show();
         };
 
@@ -105,27 +102,13 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
             showDeleteDialog(data, position);
         });
 
-        // Attach dialog listener to title
-        holder.titleView.setOnClickListener(showDialogClickListener);
+        // Open the full details dialog on click of the preview body
+        holder.detailsView.setOnClickListener(showFullContentDialog);
 
-        /**
-         * Show full details only if journal details length is within maxLength
-         * Otherwise, show Read More - which will open a dialog with the full details
-         */
-        if (fullDetails.length() > maxLength) {
-            String shortText = fullDetails.substring(0, maxLength).trim() + "… ";
-            String readMoreText = "Read more";
-
-            SpannableString spannable = new SpannableString(shortText + readMoreText);
-            spannable.setSpan(new ForegroundColorSpan(Color.BLUE), shortText.length(), spannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            spannable.setSpan(new StyleSpan(Typeface.BOLD), shortText.length(), spannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-            holder.detailsView.setText(spannable);
-            holder.detailsView.setOnClickListener(showDialogClickListener);
-        } else {
-            holder.detailsView.setText(fullDetails);
-            holder.detailsView.setOnClickListener(showDialogClickListener); // Still allow full dialog
-        }
+        // Show only a few lines for preview. On click, to show all content
+        holder.detailsView.setText(Html.fromHtml(details, Html.FROM_HTML_MODE_LEGACY));
+        holder.detailsView.setMaxLines(5);
+        holder.detailsView.setEllipsize(TextUtils.TruncateAt.END);
     }
 
     @Override
@@ -180,13 +163,27 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
 
         EditText titleInput = dialogView.findViewById(R.id.titleInput);
         EditText dateInput = dialogView.findViewById(R.id.dateInput);
-        EditText detailsInput = dialogView.findViewById(R.id.detailsInput);
+        //EditText detailsInput = dialogView.findViewById(R.id.detailsInput);
+        RichEditor detailsInput = dialogView.findViewById(R.id.detailsInputRichEditor);
+        Button detailsInputBtnBold = dialogView.findViewById(R.id.detailsInputBtnBold);
+        Button detailsInputBtnItalics = dialogView.findViewById(R.id.detailsInputBtnItalics);
+        Button detailsInputBtnUnderline = dialogView.findViewById(R.id.detailsInputBtnUnderline);
+        Button detailsInputBtnStrikethrough = dialogView.findViewById(R.id.detailsInputBtnStrikethrough);
+        ImageButton detailsInputBtnBulletList = dialogView.findViewById(R.id.detailsInputBtnBulletList);
+        ImageButton detailsInputBtnNumberList = dialogView.findViewById(R.id.detailsInputBtnNumberList);
 
         titleInput.setText(journal.getTitle());
         dateInput.setText(journal.getDate());
-        detailsInput.setText(journal.getDetails());
+        //detailsInput.setText(journal.getDetails());
+        detailsInput.setHtml(journal.getDetails());
 
-        //builder.setView(dialogView);
+        detailsInputBtnBold.setOnClickListener(v -> detailsInput.setBold());
+        detailsInputBtnItalics.setOnClickListener(v -> detailsInput.setItalic());
+        detailsInputBtnUnderline.setOnClickListener(v -> detailsInput.setUnderline());
+        detailsInputBtnStrikethrough.setOnClickListener(v -> detailsInput.setStrikeThrough());
+        detailsInputBtnBulletList.setOnClickListener(v -> detailsInput.setBullets());
+        detailsInputBtnNumberList.setOnClickListener(v -> detailsInput.setNumbers());
+
         builder.setView(dialogView)
                 .setPositiveButton("Update", null)
                 .setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss());
@@ -198,7 +195,8 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
             updateButton.setOnClickListener(v -> {
                 String newTitle = titleInput.getText().toString().trim();
                 String newDate = dateInput.getText().toString().trim();
-                String newDetails = detailsInput.getText().toString().trim();
+                //String newDetails = detailsInput.getText().toString().trim();
+                String newDetails = detailsInput.getHtml();
 
                 if (!newTitle.isEmpty() && !newDate.isEmpty() && !newDetails.isEmpty()) {
                     // Prepare updated model

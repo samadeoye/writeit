@@ -6,4 +6,6 @@
     <string name="select_date">Select Date</string>
     <string name="details">Details</string>
     <string name="new_journal_entry">New Journal Entry</string>
+    <string name="capital_u_underlined"><u>U</u></string>
+    <string name="capital_s_strikethrough"><strike>S</strike></string>
 </resources>
