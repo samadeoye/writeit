@@ -1,9 +1,13 @@
 package com.samwale.writeit;
 
+import android.Manifest;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -14,13 +18,20 @@ import android.widget.Toast;
 import android.widget.ImageView;
 import android.text.TextWatcher;
 import android.text.Editable;
+import android.content.Intent;
 
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.app.AlertDialog;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.activity.result.ActivityResultLauncher;
 
+import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
@@ -55,6 +66,16 @@ public class MainActivity extends AppCompatActivity {
     private boolean isLastPage = false;
     private int journalListSize = 0;
 
+    private JournalAdapter.ImagePickerListener imagePickerListener;
+    private ActivityResultLauncher<Intent> imagePickerLauncher;
+    private RichEditor currentDetailsInput;
+
+    private JournalAdapter.ImageCaptureListener imageCaptureListener;
+    private ActivityResultLauncher<Uri> imageCaptureLauncher;
+    private Uri photoUri;
+    private JournalAdapter.AudioPickerListener audioPickerListener;
+    private ActivityResultLauncher<Intent> audioPickerLauncher;
+
     public MainActivity() throws GeneralSecurityException, IOException {
     }
 
@@ -87,6 +108,109 @@ public class MainActivity extends AppCompatActivity {
             editor.putString(deviceIdString, deviceId);  // Save the new UUID
             editor.apply();
         }
+
+        // Picking image from gallery
+        imagePickerListener = (position, detailsInput) -> {
+            currentDetailsInput = detailsInput;
+
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            imagePickerLauncher.launch(intent);
+        };
+
+        imagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Uri selectedImageUri = result.getData().getData();
+                        if (currentDetailsInput != null && selectedImageUri != null) {
+                            try {
+                                Uri persistentUri = JournalUtils.copyMediaToAppStorage(selectedImageUri, "image", MainActivity.this);
+                                if (persistentUri != null) {
+                                    //Toast.makeText(this, persistentUri.toString(), Toast.LENGTH_SHORT).show();
+                                    currentDetailsInput.insertImage(persistentUri.toString(), "image", 200);
+                                } else {
+                                    Toast.makeText(MainActivity.this, "Failed to copy image", Toast.LENGTH_SHORT).show();
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                String errorMessage = e.getMessage();
+                                Toast.makeText(MainActivity.this, "Error copying image: " + errorMessage, Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    }
+                }
+        );
+
+        // Taking photo with camera
+        imageCaptureListener = (position, detailsInput) -> {
+
+            try {
+                currentDetailsInput = detailsInput;
+
+                File photoFile = JournalUtils.createImageFile(MainActivity.this);
+                photoUri = FileProvider.getUriForFile(MainActivity.this, getPackageName() + ".fileprovider", photoFile);
+
+                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA}, 101);
+                }
+
+                imageCaptureLauncher.launch(photoUri);
+            } catch (IOException e) {
+                e.printStackTrace();
+                Toast.makeText(MainActivity.this, "Could not create file for photo", Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        imageCaptureLauncher = registerForActivityResult(
+                new ActivityResultContracts.TakePicture(),
+                success -> {
+                    if (success && photoUri != null) {
+                        if (currentDetailsInput != null && photoUri != null) {
+                            try {
+                                Uri persistentUri = JournalUtils.copyMediaToAppStorage(photoUri, "image", MainActivity.this);
+                                if (persistentUri != null) {
+                                    currentDetailsInput.insertImage(persistentUri.toString(), "image", 200);
+                                } else {
+                                    Toast.makeText(MainActivity.this, "Failed to copy image", Toast.LENGTH_SHORT).show();
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                String errorMessage = e.getMessage();
+                                Toast.makeText(MainActivity.this, "Error copying image: " + errorMessage, Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    }
+                }
+        );
+
+        // Picking audio from device
+        audioPickerListener = (position, detailsInput) -> {
+            currentDetailsInput = detailsInput;
+
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
+            audioPickerLauncher.launch(intent);
+        };
+
+        audioPickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Uri audioUri = result.getData().getData();
+                        try {
+                            Uri persistentUri = JournalUtils.copyMediaToAppStorage(audioUri, "audio", MainActivity.this);
+                            if (persistentUri != null) {
+                                currentDetailsInput.insertAudio(persistentUri.toString());
+                            } else {
+                                Toast.makeText(MainActivity.this, "Failed to copy audio", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            String errorMessage = e.getMessage();
+                            Toast.makeText(MainActivity.this, "Error copying audio: " + errorMessage, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }
+        );
 
         // Load journal entries from API
         loadJournals(currentPage);
@@ -145,8 +269,11 @@ public class MainActivity extends AppCompatActivity {
     // Add New Journal Entry Dialog
     private void showAddNewEntryDialog(JournalAdapter adapter) {
         // Create a dialog builder
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         View dialogView = getLayoutInflater().inflate(R.layout.save_journal_entry, null);
+
+        // Position to place new entry
+        int position = 0;
 
         // Find the input fields within the dialog view
         EditText titleInput = dialogView.findViewById(R.id.titleInput);
@@ -160,12 +287,39 @@ public class MainActivity extends AppCompatActivity {
         ImageButton detailsInputBtnBulletList = dialogView.findViewById(R.id.detailsInputBtnBulletList);
         ImageButton detailsInputBtnNumberList = dialogView.findViewById(R.id.detailsInputBtnNumberList);
 
+        ImageButton btnPickImage = dialogView.findViewById(R.id.btnPickImage);
+        ImageButton btnCaptureImage = dialogView.findViewById(R.id.btnCaptureImage);
+        ImageButton btnPickAudio = dialogView.findViewById(R.id.btnPickAudio);
+
         detailsInputBtnBold.setOnClickListener(v -> detailsInput.setBold());
         detailsInputBtnItalics.setOnClickListener(v -> detailsInput.setItalic());
         detailsInputBtnUnderline.setOnClickListener(v -> detailsInput.setUnderline());
         detailsInputBtnStrikethrough.setOnClickListener(v -> detailsInput.setStrikeThrough());
         detailsInputBtnBulletList.setOnClickListener(v -> detailsInput.setBullets());
         detailsInputBtnNumberList.setOnClickListener(v -> detailsInput.setNumbers());
+
+        btnPickImage.setOnClickListener(v -> {
+            if (imagePickerListener != null) {
+                imagePickerListener.onPickImageRequested(position, detailsInput);
+            }
+        });
+
+        btnCaptureImage.setOnClickListener(v -> {
+            try {
+                if (imageCaptureListener != null) {
+                    imageCaptureListener.onCaptureImageRequested(position, detailsInput);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                Toast.makeText(MainActivity.this, "Could not create file for photo", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnPickAudio.setOnClickListener(v -> {
+            if (audioPickerListener != null) {
+                audioPickerListener.onPickAudioRequested(position, detailsInput);
+            }
+        });
 
         // Set the dialog view
         builder.setView(dialogView)
@@ -207,7 +361,7 @@ public class MainActivity extends AppCompatActivity {
                             JournalModel createdJournal = response.body();
                             // Add the new entry to the adapter
                             adapter.addJournalEntry(createdJournal);
-                            allJournals.add(0, createdJournal);
+                            allJournals.add(position, createdJournal);
 
                             // Update total journal entries
                             journalListSize++;
@@ -302,7 +456,7 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                 }
                             }
-                        }, deviceId);
+                        }, deviceId, imagePickerListener, imageCaptureListener, audioPickerListener);
 
                         recyclerView.setAdapter(adapter);
                     }
@@ -333,10 +487,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showSearchDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setTitle("Search Journals");
 
-        final EditText searchInput = new EditText(this);
+        final EditText searchInput = new EditText(MainActivity.this);
         searchInput.setHint("Type to search...");
         builder.setView(searchInput);
 
@@ -380,7 +534,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void showFilterOptions() {
         final String[] options = {"Date (Newest First)", "Date (Oldest First)", "Title (A–Z)", "Title (Z–A)"};
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setTitle("Sort Journals By")
                 .setItems(options, (dialog, which) -> {
                     switch (which) {

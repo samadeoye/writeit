@@ -43,6 +43,7 @@ dependencies {
     implementation(libs.swiperefreshlayout)
     implementation(libs.security.crypto)
     implementation(libs.richeditor.android)
+    implementation(libs.activity.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

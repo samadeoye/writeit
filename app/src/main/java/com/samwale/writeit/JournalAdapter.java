@@ -4,21 +4,15 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.Typeface;
 import android.text.Html;
-import android.text.SpannableString;
-import android.text.Spanned;
 import android.text.TextUtils;
-import android.text.method.LinkMovementMethod;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,6 +20,8 @@ import android.widget.Button;
 import android.app.DatePickerDialog;
 
 import androidx.appcompat.app.AlertDialog;
+
+import java.io.IOException;
 import java.text.ParseException;
 
 import java.text.SimpleDateFormat;
@@ -52,12 +48,31 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
 
     private OnEntryUpdatedListener updateListener;
 
+    // Pick Image
+    public interface ImagePickerListener {
+        void onPickImageRequested(int position, RichEditor detailsInput);
+    }
+    private ImagePickerListener imagePickerListener;
+    // Capture Image
+    public interface ImageCaptureListener {
+        void onCaptureImageRequested(int position, RichEditor detailsInput) throws IOException;
+    }
+    private ImageCaptureListener imageCaptureListener;
+    // Pick Audio
+    public interface AudioPickerListener {
+        void onPickAudioRequested(int position, RichEditor detailsInput);
+    }
+    private AudioPickerListener audioPickerListener;
+
     // Constructor to initialize data list
-    public JournalAdapter(Context context, List<JournalModel> journalList, OnEntryUpdatedListener listener, String deviceId) {
+    public JournalAdapter(Context context, List<JournalModel> journalList, OnEntryUpdatedListener listener, String deviceId, ImagePickerListener imagePickerListener, ImageCaptureListener imageCaptureListener, AudioPickerListener audioPickerListener) {
         this.context = context;
         this.journalList = journalList;
         this.updateListener = listener;
         this.deviceId = deviceId;
+        this.imagePickerListener = imagePickerListener;
+        this.imageCaptureListener = imageCaptureListener;
+        this.audioPickerListener = audioPickerListener;
     }
 
     @NonNull
@@ -81,10 +96,10 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
         // Show full content in dialog when the preview body is clicked
         View.OnClickListener showFullContentDialog = v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
-            builder.setTitle(title);
+            //builder.setTitle(title);
 
             WebView webView = new WebView(context);
-            webView.loadDataWithBaseURL(null, "<html><body>Date: " + date + "<br><br>" + details + "</body></html>", "text/html", "utf-8", null);
+            webView.loadDataWithBaseURL(null, "<html><body><div style='padding-top:10px;'><b>" + title + "</b></div><br> <div>Date: <b>" + date + "</b></div><br><br>" + details + "</body></html>", "text/html", "utf-8", null);
 
             builder.setView(webView);
             builder.setNegativeButton("Close", null);
@@ -105,8 +120,9 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
         // Open the full details dialog on click of the preview body
         holder.detailsView.setOnClickListener(showFullContentDialog);
 
-        // Show only a few lines for preview. On click, to show all content
-        holder.detailsView.setText(Html.fromHtml(details, Html.FROM_HTML_MODE_LEGACY));
+        // Remove <img> tags from the HTML
+        String previewWithoutImages = details.replaceAll("<img[^>]*>", "");
+        holder.detailsView.setText(Html.fromHtml(previewWithoutImages, Html.FROM_HTML_MODE_LEGACY));
         holder.detailsView.setMaxLines(5);
         holder.detailsView.setEllipsize(TextUtils.TruncateAt.END);
     }
@@ -172,6 +188,10 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
         ImageButton detailsInputBtnBulletList = dialogView.findViewById(R.id.detailsInputBtnBulletList);
         ImageButton detailsInputBtnNumberList = dialogView.findViewById(R.id.detailsInputBtnNumberList);
 
+        ImageButton btnPickImage = dialogView.findViewById(R.id.btnPickImage);
+        ImageButton btnCaptureImage = dialogView.findViewById(R.id.btnCaptureImage);
+        ImageButton btnPickAudio = dialogView.findViewById(R.id.btnPickAudio);
+
         titleInput.setText(journal.getTitle());
         dateInput.setText(journal.getDate());
         //detailsInput.setText(journal.getDetails());
@@ -183,6 +203,29 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
         detailsInputBtnStrikethrough.setOnClickListener(v -> detailsInput.setStrikeThrough());
         detailsInputBtnBulletList.setOnClickListener(v -> detailsInput.setBullets());
         detailsInputBtnNumberList.setOnClickListener(v -> detailsInput.setNumbers());
+
+        btnPickImage.setOnClickListener(v -> {
+            if (imagePickerListener != null) {
+                imagePickerListener.onPickImageRequested(position, detailsInput);
+            }
+        });
+
+        btnCaptureImage.setOnClickListener(v -> {
+            try {
+                if (imageCaptureListener != null) {
+                    imageCaptureListener.onCaptureImageRequested(position, detailsInput);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                Toast.makeText(context, "Could not create file for photo", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnPickAudio.setOnClickListener(v -> {
+            if (audioPickerListener != null) {
+                audioPickerListener.onPickAudioRequested(position, detailsInput);
+            }
+        });
 
         builder.setView(dialogView)
                 .setPositiveButton("Update", null)
