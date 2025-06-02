@@ -16,7 +16,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class JournalUtils {
 
@@ -108,13 +110,31 @@ public class JournalUtils {
         return false;
     }
 
+    // Mapping mimeType to extensions
+    private static final Map<String, String> MIME_TYPE_TO_EXTENSION = new HashMap<>();
+    static {
+        // Image MIME types
+        MIME_TYPE_TO_EXTENSION.put("image/jpeg", "jpg");
+        MIME_TYPE_TO_EXTENSION.put("image/png", "png");
+        MIME_TYPE_TO_EXTENSION.put("image/gif", "gif");
+        MIME_TYPE_TO_EXTENSION.put("image/webp", "webp");
+
+        // Audio MIME types
+        MIME_TYPE_TO_EXTENSION.put("audio/mpeg", "mp3");
+        MIME_TYPE_TO_EXTENSION.put("audio/wav", "wav");
+        MIME_TYPE_TO_EXTENSION.put("audio/ogg", "ogg");
+        MIME_TYPE_TO_EXTENSION.put("audio/mp4", "m4a");
+        MIME_TYPE_TO_EXTENSION.put("audio/aac", "aac");
+        MIME_TYPE_TO_EXTENSION.put("audio/flac", "flac");
+    }
+
     public static String getFileExtension(Uri uri, Context context, String defaultExtension) {
         String extension = null;
 
         // Try to get extension from ContentResolver MIME type
         String mimeType = context.getContentResolver().getType(uri);
         if (mimeType != null) {
-            extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
+            extension = MIME_TYPE_TO_EXTENSION.get(mimeType);
         }
 
         // Fallback: try to get extension from URI path
@@ -122,7 +142,7 @@ public class JournalUtils {
             String path = uri.getPath();
             if (path != null) {
                 int lastDot = path.lastIndexOf('.');
-                if (lastDot != -1) {
+                if (lastDot != -1 && lastDot < path.length() - 1) {
                     extension = path.substring(lastDot + 1);
                 }
             }

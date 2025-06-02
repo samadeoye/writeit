@@ -37,21 +37,4 @@ public class JournalModel {
     public String getDetails() {
         return details;
     }
-
-    // Setters
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public void setTitle(String title) {
-        this.title = JournalUtils.capitalizeWords(title);
-    }
-
-    public void setDate(String date) {
-        this.date = date;
-    }
-
-    public void setDetails(String details) {
-        this.details = details;
-    }
 }
