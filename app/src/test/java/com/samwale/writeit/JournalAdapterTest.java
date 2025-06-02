@@ -21,8 +21,6 @@ import java.util.List;
 public class JournalAdapterTest {
 
     private List<JournalModel> initialList;
-
-    private Context context;
     private JournalAdapter.OnEntryUpdatedListener mockListener;
     private JournalAdapter.ImagePickerListener mockImagePickerListener;
     private JournalAdapter.ImageCaptureListener mockImageCaptureListener;
@@ -31,8 +29,6 @@ public class JournalAdapterTest {
 
     @Before
     public void setUp() {
-        context = ApplicationProvider.getApplicationContext();
-
         // Set the initial list
         initialList = new ArrayList<>();
 
