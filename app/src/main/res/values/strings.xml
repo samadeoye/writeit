@@ -5,7 +5,21 @@
     <string name="title">Title</string>
     <string name="select_date">Select Date</string>
     <string name="details">Details</string>
-    <string name="new_journal_entry">New Journal Entry</string>
+    <string name="filter">Filter</string>
+    <string name="search">Search</string>
+    <string name="journal_title">Journal Title</string>
+    <string name="bullet_list">Bullet List</string>
+    <string name="number_list">Number List</string>
+    <string name="add_image">Add Image</string>
+    <string name="capture_image">Capture Image</string>
+    <string name="add_audio">Add Audio</string>
+    <string name="add_journal">Add Journal</string>
+    <string name="edit_journal">Edit Journal</string>
+    <string name="delete_journal">Delete Journal</string>
+    <string name="save_journal_entry">Save Journal Entry</string>
+    <string name="journal_entry_details_hint">This is the journal entry details text.</string>
+    <string name="start_your_journal_now">Start your journal now</string>
+    <string name="entry_count_icon">Entry Count Icon</string>
     <string name="capital_u_underlined"><u>U</u></string>
     <string name="capital_s_strikethrough"><strike>S</strike></string>
 </resources>

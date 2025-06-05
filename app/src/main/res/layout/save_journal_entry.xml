@@ -10,7 +10,7 @@
         android:id="@+id/editViewTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/new_journal_entry"
+        android:text="@string/save_journal_entry"
         android:textStyle="bold"
         android:textSize="18sp"
         android:paddingBottom="12dp" />
@@ -44,22 +44,6 @@
             android:clickable="true"
             android:inputType="none" />
     </com.google.android.material.textfield.TextInputLayout>
-
-    <!-- Details Input -->
-<!--    <com.google.android.material.textfield.TextInputLayout-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:hint="@string/details"-->
-<!--        android:layout_marginTop="12dp">-->
-
-<!--        <com.google.android.material.textfield.TextInputEditText-->
-<!--            android:id="@+id/detailsInput"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:inputType="textMultiLine"-->
-<!--            android:lines="5"-->
-<!--            android:gravity="top" />-->
-<!--    </com.google.android.material.textfield.TextInputLayout>-->
 
     <ScrollView
         android:layout_width="match_parent"
@@ -139,7 +123,7 @@
             android:layout_height="wrap_content"
             android:src="@drawable/format_list_bulleted_24"
             android:background="@android:color/transparent"
-            android:contentDescription="Bullet List"
+            android:contentDescription="@string/bullet_list"
             android:padding="10dp"
             android:minHeight="0dp"
             android:minWidth="0dp" />
@@ -150,7 +134,7 @@
             android:layout_height="wrap_content"
             android:src="@drawable/format_list_numbered_24"
             android:background="@android:color/transparent"
-            android:contentDescription="Number List"
+            android:contentDescription="@string/number_list"
             android:padding="10dp"
             android:minHeight="0dp"
             android:minWidth="0dp" />
@@ -161,7 +145,7 @@
             android:layout_height="wrap_content"
             android:src="@drawable/baseline_image_24"
             android:background="@android:color/transparent"
-            android:contentDescription="Add Image"
+            android:contentDescription="@string/add_image"
             android:padding="10dp"
             android:minHeight="0dp"
             android:minWidth="0dp" />
@@ -172,7 +156,7 @@
             android:layout_height="wrap_content"
             android:src="@drawable/baseline_camera_alt_24"
             android:background="@android:color/transparent"
-            android:contentDescription="Capture Image"
+            android:contentDescription="@string/capture_image"
             android:padding="10dp"
             android:minHeight="0dp"
             android:minWidth="0dp" />
@@ -183,7 +167,7 @@
             android:layout_height="wrap_content"
             android:src="@drawable/baseline_audio_file_24"
             android:background="@android:color/transparent"
-            android:contentDescription="Add Audio"
+            android:contentDescription="@string/add_audio"
             android:padding="10dp"
             android:minHeight="0dp"
             android:minWidth="0dp" />

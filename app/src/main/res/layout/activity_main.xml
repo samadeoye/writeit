@@ -29,7 +29,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Add Journal"
+            android:contentDescription="@string/add_journal"
             android:src="@android:drawable/ic_menu_add"
             app:tint="@android:color/black"
             android:paddingVertical="8dp"
@@ -54,7 +54,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@android:drawable/ic_menu_agenda"
-                android:contentDescription="Entry Count Icon"
+                android:contentDescription="@string/entry_count_icon"
                 app:tint="#999999" />
 
             <TextView
@@ -74,7 +74,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@android:drawable/ic_menu_search"
-                android:contentDescription="Search"
+                android:contentDescription="@string/search"
                 app:tint="@android:color/black"
                 android:layout_marginEnd="12dp" />
 
@@ -84,7 +84,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@android:drawable/ic_menu_sort_by_size"
-                android:contentDescription="Filter"
+                android:contentDescription="@string/filter"
                 app:tint="@android:color/black" />
         </LinearLayout>
     </LinearLayout>
@@ -114,7 +114,7 @@
                 android:id="@+id/emptyView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Start your journal now"
+                android:text="@string/start_your_journal_now"
                 android:textSize="16sp"
                 android:gravity="center"
                 android:textColor="#777"
@@ -122,28 +122,5 @@
                 android:layout_gravity="center" />
         </FrameLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-    <!-- RecyclerView for list -->
-<!--    <androidx.recyclerview.widget.RecyclerView-->
-<!--        android:id="@+id/journalListView"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="0dp"-->
-<!--        android:paddingBottom="16dp"-->
-<!--        android:clipToPadding="false"-->
-<!--        app:layout_constraintTop_toBottomOf="@id/topBar"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent" />-->
-
-<!--    <TextView-->
-<!--        android:id="@+id/emptyView"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="Start your journal now"-->
-<!--        android:textSize="16sp"-->
-<!--        android:gravity="center"-->
-<!--        android:textColor="#777"-->
-<!--        android:visibility="gone"-->
-<!--        app:layout_constraintTop_toBottomOf="@id/topBar" />-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

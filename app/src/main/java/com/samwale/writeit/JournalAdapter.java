@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -11,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -94,7 +96,6 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
         // Show full content in dialog when the preview body is clicked
         View.OnClickListener showFullContentDialog = v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
-            //builder.setTitle(title);
 
             WebView webView = new WebView(context);
             webView.loadDataWithBaseURL(null, "<html><body><div style='padding-top:10px;'><b>" + title + "</b></div><br> <div>Date: <b>" + date + "</b></div><br><br>" + details + "</body></html>", "text/html", "utf-8", null);
@@ -118,9 +119,10 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
         // Open the full details dialog on click of the preview body
         holder.detailsView.setOnClickListener(showFullContentDialog);
 
-        // Remove <img> tags from the HTML
-        String previewWithoutImages = details.replaceAll("<img[^>]*>", "");
-        holder.detailsView.setText(Html.fromHtml(previewWithoutImages, Html.FROM_HTML_MODE_LEGACY));
+        // Remove <img> & <audio> tags from the preview
+        String preview = details.replaceAll("<img[^>]*>", "");
+        preview = preview.replaceAll("<audio[^>]*>", "");
+        holder.detailsView.setText(Html.fromHtml(preview, Html.FROM_HTML_MODE_LEGACY));
         holder.detailsView.setMaxLines(5);
         holder.detailsView.setEllipsize(TextUtils.TruncateAt.END);
     }
